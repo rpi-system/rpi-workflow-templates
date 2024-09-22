@@ -92,7 +92,7 @@ on:
         description: Build stage to target
         required: false
         type: string
-   
+        
     secrets:
       dockerhub-username:
         description: Docker Hub username
