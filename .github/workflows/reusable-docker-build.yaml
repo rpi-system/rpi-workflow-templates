@@ -62,8 +62,9 @@ on:
         description: Platforms to build for
         required: false
         type: string
-        # common ones: linux/amd64,linux/arm64,linux/arm/v7
-        default: linux/amd64
+        #common ones: linux/amd64,linux/arm64,linux/arm/v7
+        default: linux/amd64,linux/arm64,linux/arm/v7
+        # linux/amd64
       push:
         description: Push image to registry(s)
         required: false
