@@ -15,7 +15,6 @@ on:
     # - Defaults to only linux/amd64 platform builds, but can build for others in parallel
 
   workflow_call:
-    # allow reuse of this workflow in other repos
     inputs:
       comment-enable:
         description: Create a PR comment with image tags and labels
@@ -42,9 +41,9 @@ on:
         required: false
         type: string
         # will tag latest on a git tag push, or if you add a type=semver or type=match tag-rules
-        # NOTE: if you are seeing `latest` retagged when you don't expect it, set this latest=false
+        # NOTE: if you are seeing `latest` retagged when you don't expect it, set this latest=false not latest=auto
         default: |
-            latest=auto
+            latest=false 
       ghcr-enable:
         description: Log into GHCR
         required: false
@@ -122,7 +121,7 @@ jobs:
 
     name: Build+Push
 
-    runs-on: ubuntu-latest
+    runs-on: [ ubuntu-latest, macos-latest, self-hosted ]
 
     outputs:
       # only outputs the unique gha- image tag that's unique to each GHA run
