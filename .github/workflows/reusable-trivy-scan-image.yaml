@@ -18,7 +18,7 @@ on:
         description: Comma delimited list of severities to scan for UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
         required: false
         type: string
-        default: 'HIGH,CRITICAL'
+        default: 'MEDIUM,HIGH,CRITICAL'
       ignore-unfixed:
         description: Ignore unpatched/unfixed vulnerabilities
         required: false
@@ -29,7 +29,7 @@ on:
         required: false
         type: boolean
         default: false
-    
+
     secrets:
       registry-username:
         description: Username for registry
