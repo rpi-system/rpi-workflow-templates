@@ -1,0 +1,145 @@
+---
+  name: Test Docker Compose
+
+  on:
+    workflow_call: 
+      inputs: 
+        GRAFANA_PLUGINS:
+          description: Grafana Plugins
+          required: true
+          default: grafana-clock-panel,grafana-simple-json-datasource
+          type: string
+        INFLUXDB_INIT_MODE:
+          description: InfluxDB Init Mode
+          required: true
+          default: setup
+          type: string
+        INFLUXDB_ORG:
+          description: InfluxDB Organization
+          required: true
+          default: docs
+          type: string
+        INFLUXDB_BUCKET:
+          description: Dockerfile to build, relative to context path
+          required: true
+          default: home
+          type: string
+
+      secrets: 
+        INFLUXDB_ADMIN_USERNAME: 
+          description: 'InfluxDB Admin Username'
+          required: true
+        INFLUXDB_ADMIN_PASSWORD: 
+          description: 'InfluxDB Admin Password'
+          required: true
+        INFLUXDB_ADMIN_TOKEN: 
+          description: 'InfluxDB Admin Token'
+          required: true
+        PORTAINER_ADMIN_PASSWORD: 
+          description: 'Portainer Admin Password'
+          required: true
+        GRAFANA_ADMIN_USER: 
+          description: 'Grafana Admin User'
+          required: true
+        GRAFANA_ADMIN_PASSWORD: 
+          description: 'Grafana Admin Password'
+          required: true
+
+      outputs:
+        image-tag:
+          description: "single-use image tag for GHA runs"
+          value: ${{ jobs.build-image.outputs.image-tag }}
+
+  permissions:
+    contents: read
+    packages: read # needed to push docker image to ghcr.io
+    pull-requests: read # needed to create and update comments in PRs
+
+  jobs:
+    docker-compose-test-raspi-build:
+      runs-on: [ ubuntu-latest ] # self-hosted,
+      outputs:
+        # only outputs the unique gha- image tag that's unique to each GHA run
+        image-tag: ${{ steps.image-tag.outputs.image-tag }}
+      steps:
+        - uses: actions/checkout@v4
+          with:
+            sparse-checkout: |
+              compose.yaml
+            sparse-checkout-cone-mode: false
+
+        - name: Set up Docker
+          uses: docker/setup-buildx-action@v2
+
+        - name: Log in to GitHub Container Registry
+          uses: docker/login-action@v2
+          with:
+            registry: ghcr.io
+            username: ${{ github.actor }}
+            password: ${{ secrets.GITHUB_TOKEN }}
+
+        - name: Pull Images
+          run: docker compose pull 
+
+        - name: Add Secret Files
+          run: |
+            echo "${{ secrets.INFLUXDB_ADMIN_USERNAME }}" > ./secrets/.env.influxdb_admin_username
+            echo "${{ secrets.INFLUXDB_ADMIN_PASSWORD }}" > ./secrets/.env.influxdb_admin_password
+            echo "${{ secrets.INFLUXDB_ADMIN_TOKEN }}" > ./secrets/.env.influxdb_admin_token
+            echo "${{ secrets.PORTAINER_ADMIN_PASSWORD }}" > ./secrets/.env.portainer_admin_password
+            echo "${{ secrets.GRAFANA_ADMIN_USER }}" > ./secrets/grafana_admin_user
+            echo "${{ secrets.GRAFANA_ADMIN_PASSWORD }}" > ./secrets/grafana_admin_password
+  
+        # - name: Set up environment variables
+        #   run: |
+        #     echo "GRAFANA_ADMIN_USER=${{ secrets.GRAFANA_ADMIN_USER }}" >> $GITHUB_ENV
+        #     echo "GRAFANA_ADMIN_PASSWORD=${{ secrets.GRAFANA_ADMIN_PASSWORD }}" >> $GITHUB_ENV
+        #     echo "GRAFANA_PLUGINS=${{ secrets.GRAFANA_PLUGINS }}" >> $GITHUB_ENV
+        #     echo "INFLUXDB_INIT_MODE=${{ secrets.INFLUXDB_INIT_MODE }}" >> $GITHUB_ENV
+        #     echo "INFLUXDB_ORG=${{ secrets.INFLUXDB_ORG }}" >> $GITHUB_ENV
+        #     echo "INFLUXDB_BUCKET=${{ secrets.INFLUXDB_BUCKET }}" >> $GITHUB_ENV
+        
+        - name: Build Docker Compose services
+          run: docker compose up --build -d 
+  
+        - name: Tear Down Services
+          if: always()
+          run: docker compose down
+          
+        # - name: Wait for Services to be Healthy
+        #   run: |
+        #     # Warte bis alle Container den Status "healthy" haben
+        #     for i in {1..30}; do
+        #       if [ $(docker compose ps --services --filter "health=healthy" | wc -l) -eq $(docker compose ps -q | wc -l) ]; then
+        #         echo "All services are healthy."
+        #         exit 0
+        #       else
+        #         echo "Waiting for services to become healthy..."
+        #         sleep 10
+        #       fi
+        #     done
+        #     echo "Not all services are healthy after waiting."
+        #     exit 1
+  
+        # - name: Optional - Perform Additional Health Checks
+        #   run: |
+        #     # Beispiel: Prüfe, ob Grafana erreichbar ist
+        #     curl -f http://localhost:3000 || exit 1
+        #     # Füge weitere Checks nach Bedarf hinzu
+  
+        # - name: Optional - Perform Additional Health Checks
+        #   run: |
+        #     # Überprüfe Home Assistant
+        #     curl -f http://localhost:8123 || { echo "Home Assistant is not reachable"; exit 1; }
+            
+        #     # Überprüfe Mosquitto MQTT Broker
+        #     mosquitto_sub -h localhost -p 1883 -t "test/topic" -C 1 || { echo "Mosquitto is not reachable"; exit 1; }
+            
+        #     # Überprüfe Grafana
+        #     curl -f http://localhost:3000 || { echo "Grafana is not reachable"; exit 1; }
+            
+        #     # Überprüfe InfluxDB
+        #     curl -f http://localhost:8086/ping || { echo "InfluxDB is not reachable"; exit 1; }
+            
+        #     # Überprüfe Portainer
+        #     curl -f https://localhost:9443 || { echo "Portainer is not reachable"; exit 1; }
