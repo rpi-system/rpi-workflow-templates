@@ -6,22 +6,22 @@
       inputs: 
         GRAFANA_PLUGINS: 
           description: Grafana Plugins
-          required: true
+          required: false
           default: grafana-clock-panel,grafana-simple-json-datasource
           type: string
         INFLUXDB_INIT_MODE:
           description: InfluxDB Init Mode
-          required: true
+          required: false
           default: setup
           type: string
         INFLUXDB_ORG:
           description: InfluxDB Organization
-          required: true
+          required: false
           default: docs
           type: string
         INFLUXDB_BUCKET:
           description: Dockerfile to build, relative to context path
-          required: true
+          required: false
           default: home
           type: string
         INFLUXDB_ADMIN_USERNAME: 
@@ -31,27 +31,27 @@
           type: string
         INFLUXDB_ADMIN_PASSWORD: 
           description: 'InfluxDB Admin Password'
-          required: true
+          required: false
           default: password
           type: string
         INFLUXDB_ADMIN_TOKEN: 
           description: 'InfluxDB Admin Token'
-          required: true
+          required: false
           default: token
           type: string
         PORTAINER_ADMIN_PASSWORD: 
           description: 'Portainer Admin Password'
-          required: true
+          required: false
           default: admin
           type: string
         GRAFANA_ADMIN_USER: 
           description: 'Grafana Admin User'
-          required: true
+          required: false
           default: admin
           type: string
         GRAFANA_ADMIN_PASSWORD: 
           description: 'Grafana Admin Password'
-          required: true
+          required: false
           default: password
           type: string
 
