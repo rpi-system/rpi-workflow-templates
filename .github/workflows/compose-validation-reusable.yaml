@@ -4,7 +4,7 @@
   on:
     workflow_call: 
       inputs: 
-        GRAFANA_PLUGINS:
+        GRAFANA_PLUGINS: 
           description: Grafana Plugins
           required: true
           default: grafana-clock-panel,grafana-simple-json-datasource
@@ -24,26 +24,36 @@
           required: true
           default: home
           type: string
-
-      secrets: 
         INFLUXDB_ADMIN_USERNAME: 
           description: 'InfluxDB Admin Username'
-          required: true
+          required: false
+          default: admin
+          type: string
         INFLUXDB_ADMIN_PASSWORD: 
           description: 'InfluxDB Admin Password'
           required: true
+          default: password
+          type: string
         INFLUXDB_ADMIN_TOKEN: 
           description: 'InfluxDB Admin Token'
           required: true
+          default: token
+          type: string
         PORTAINER_ADMIN_PASSWORD: 
           description: 'Portainer Admin Password'
           required: true
+          default: admin
+          type: string
         GRAFANA_ADMIN_USER: 
           description: 'Grafana Admin User'
           required: true
+          default: admin
+          type: string
         GRAFANA_ADMIN_PASSWORD: 
           description: 'Grafana Admin Password'
           required: true
+          default: password
+          type: string
 
       outputs:
         image-tag:
@@ -71,33 +81,33 @@
         - name: Set up Docker
           uses: docker/setup-buildx-action@v2
 
-        - name: Log in to GitHub Container Registry
-          uses: docker/login-action@v2
-          with:
-            registry: ghcr.io
-            username: ${{ github.actor }}
-            password: ${{ secrets.GITHUB_TOKEN }}
+        # - name: Log in to GitHub Container Registry
+        #   uses: docker/login-action@v2
+        #   with:
+        #     registry: ghcr.io
+        #     username: ${{ github.actor }}
+        #     password: ${{ secrets.GITHUB_TOKEN }}
 
         - name: Pull Images
           run: docker compose pull 
 
         - name: Add Secret Files
           run: |
-            echo "${{ secrets.INFLUXDB_ADMIN_USERNAME }}" > ./secrets/.env.influxdb_admin_username
-            echo "${{ secrets.INFLUXDB_ADMIN_PASSWORD }}" > ./secrets/.env.influxdb_admin_password
-            echo "${{ secrets.INFLUXDB_ADMIN_TOKEN }}" > ./secrets/.env.influxdb_admin_token
-            echo "${{ secrets.PORTAINER_ADMIN_PASSWORD }}" > ./secrets/.env.portainer_admin_password
-            echo "${{ secrets.GRAFANA_ADMIN_USER }}" > ./secrets/grafana_admin_user
-            echo "${{ secrets.GRAFANA_ADMIN_PASSWORD }}" > ./secrets/grafana_admin_password
+            echo "${{ inputs.INFLUXDB_ADMIN_USERNAME }}" > ./secrets/.env.influxdb_admin_username
+            echo "${{ inputs.INFLUXDB_ADMIN_PASSWORD }}" > ./secrets/.env.influxdb_admin_password
+            echo "${{ inputs.INFLUXDB_ADMIN_TOKEN }}" > ./secrets/.env.influxdb_admin_token
+            echo "${{ inputs.PORTAINER_ADMIN_PASSWORD }}" > ./secrets/.env.portainer_admin_password
+            echo "${{ inputs.GRAFANA_ADMIN_USER }}" > ./secrets/grafana_admin_user
+            echo "${{ inputs.GRAFANA_ADMIN_PASSWORD }}" > ./secrets/grafana_admin_password
   
-        # - name: Set up environment variables
-        #   run: |
-        #     echo "GRAFANA_ADMIN_USER=${{ secrets.GRAFANA_ADMIN_USER }}" >> $GITHUB_ENV
-        #     echo "GRAFANA_ADMIN_PASSWORD=${{ secrets.GRAFANA_ADMIN_PASSWORD }}" >> $GITHUB_ENV
-        #     echo "GRAFANA_PLUGINS=${{ secrets.GRAFANA_PLUGINS }}" >> $GITHUB_ENV
-        #     echo "INFLUXDB_INIT_MODE=${{ secrets.INFLUXDB_INIT_MODE }}" >> $GITHUB_ENV
-        #     echo "INFLUXDB_ORG=${{ secrets.INFLUXDB_ORG }}" >> $GITHUB_ENV
-        #     echo "INFLUXDB_BUCKET=${{ secrets.INFLUXDB_BUCKET }}" >> $GITHUB_ENV
+        - name: Set up environment variables
+          run: |
+            echo "GRAFANA_ADMIN_USER=${{ inputs.GRAFANA_ADMIN_USER }}" >> $GITHUB_ENV
+            echo "GRAFANA_ADMIN_PASSWORD=${{ secrets.GRAFANA_ADMIN_PASSWORD }}" >> $GITHUB_ENV
+            echo "GRAFANA_PLUGINS=${{ secrets.GRAFANA_PLUGINS }}" >> $GITHUB_ENV
+            echo "INFLUXDB_INIT_MODE=${{ secrets.INFLUXDB_INIT_MODE }}" >> $GITHUB_ENV
+            echo "INFLUXDB_ORG=${{ secrets.INFLUXDB_ORG }}" >> $GITHUB_ENV
+            echo "INFLUXDB_BUCKET=${{ secrets.INFLUXDB_BUCKET }}" >> $GITHUB_ENV
         
         - name: Build Docker Compose services
           run: docker compose up --build -d 
