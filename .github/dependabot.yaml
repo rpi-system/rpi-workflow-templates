@@ -4,11 +4,9 @@ version: 2
 updates:
   # GitHub Actions
   - package-ecosystem: "github-actions"
-    directory: ".github"
+    directory: ".github/"
     schedule:
       interval: "daily"
-      time: "02:00"
-      timezone: "Europe/Berlin"
     open-pull-requests-limit: 20
     commit-message:
       prefix: "[github-actions]"
