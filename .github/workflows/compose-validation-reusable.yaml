@@ -73,10 +73,10 @@
         image-tag: ${{ steps.image-tag.outputs.image-tag }}
       steps:
         - uses: actions/checkout@v4
-          with:
-            sparse-checkout: |
-              system.yaml
-            sparse-checkout-cone-mode: false
+          # with:
+          #   sparse-checkout: |
+          #     system.yaml
+          #   sparse-checkout-cone-mode: false
 
         - name: Run docker-compose
           uses: hoverkraft-tech/compose-action@v2.0.1
