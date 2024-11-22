@@ -88,9 +88,6 @@
         #     username: ${{ github.actor }}
         #     password: ${{ secrets.GITHUB_TOKEN }}
 
-        - name: Pull Images
-          run: docker compose pull 
-
         - name: Add Secret Files
           run: |
             echo "${{ inputs.INFLUXDB_ADMIN_USERNAME }}" > ./secrets/.env.influxdb_admin_username
@@ -110,7 +107,7 @@
             echo "INFLUXDB_BUCKET=${{ secrets.INFLUXDB_BUCKET }}" >> $GITHUB_ENV
         
         - name: Build Docker Compose services
-          run: docker compose up --build -d 
+          run: docker compose -f system.yaml up --build -d
   
         - name: Tear Down Services
           if: always()
