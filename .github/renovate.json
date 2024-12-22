@@ -1,0 +1,3 @@
+{
+    "extends": ["github.com>rpi-system/renovate-bot"]
+} 
